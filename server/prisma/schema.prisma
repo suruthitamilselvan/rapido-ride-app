@@ -1,0 +1,107 @@
+// Prisma schema for Rapido Ride-Hailing Platform
+// Uses SQLite for zero-config local runs; switch provider to "postgresql" for PostgreSQL/Supabase.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  phone     String?
+  role      String   @default("RIDER") // RIDER, CAPTAIN, ADMIN
+  avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ridesAsRider Ride[]          @relation("RiderRides")
+  captain      CaptainProfile?
+  reviewsGiven Review[]        @relation("RiderReviews")
+}
+
+model CaptainProfile {
+  id            String   @id @default(uuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vehicleType   String   // BIKE, AUTO, CAB_ECONOMY, CAB_COMFORT
+  vehicleNumber String
+  vehicleModel  String
+  isOnline      Boolean  @default(false)
+  currentLat    Float    @default(12.9716) // Default Bangalore / Urban coordinates
+  currentLng    Float    @default(77.5946)
+  ratingAvg     Float    @default(4.9)
+  totalRides    Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  ridesAsCaptain  Ride[]   @relation("CaptainRides")
+  reviewsReceived Review[] @relation("CaptainReviews")
+}
+
+model Ride {
+  id              String    @id @default(uuid())
+  riderId         String
+  rider           User      @relation("RiderRides", fields: [riderId], references: [id])
+  captainId       String?
+  captain         CaptainProfile? @relation("CaptainRides", fields: [captainId], references: [id])
+  
+  pickupAddress   String
+  pickupLat       Float
+  pickupLng       Float
+  
+  dropoffAddress  String
+  dropoffLat      Float
+  dropoffLng      Float
+  
+  vehicleType     String    // BIKE, AUTO, CAB_ECONOMY, CAB_COMFORT
+  startOtp        String    // 4-digit code e.g. "5821"
+  status          String    @default("REQUESTED") // REQUESTED, ACCEPTED, ARRIVED_PICKUP, IN_PROGRESS, COMPLETED, CANCELLED
+  
+  baseFare        Float
+  distanceFare    Float
+  taxFare         Float
+  discountFare    Float     @default(0)
+  totalFare       Float
+  distanceKm      Float
+  durationMin     Int
+  
+  paymentStatus   String    @default("UNPAID") // UNPAID, PAID
+  paymentMethod   String    @default("STRIPE") // STRIPE, CASH, UPI
+  stripeIntentId  String?
+  
+  promoCode       String?
+  createdAt       DateTime  @default(now())
+  completedAt     DateTime?
+  
+  review          Review?
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  rideId    String   @unique
+  ride      Ride     @relation(fields: [rideId], references: [id], onDelete: Cascade)
+  riderId   String
+  rider     User     @relation("RiderReviews", fields: [riderId], references: [id])
+  captainId String
+  captain   CaptainProfile @relation("CaptainReviews", fields: [captainId], references: [id])
+  rating    Int      // 1 to 5 stars
+  comment   String?
+  createdAt DateTime @default(now())
+}
+
+model PromoCode {
+  id              String   @id @default(uuid())
+  code            String   @unique
+  description     String
+  discountPercent Int      // e.g. 20 for 20%
+  maxDiscount     Float    // e.g. 50 (Max ₹50 off)
+  minRideFare     Float    @default(0)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+}

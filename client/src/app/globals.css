@@ -1,0 +1,47 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 45, 40, 62;
+  --background-start-rgb: 253, 253, 253;
+  --background-end-rgb: 253, 253, 253;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: #FDFDFD;
+  font-family: var(--font-nunito), 'Nunito', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Custom Leaflet Pin Styling */
+.custom-map-icon, .custom-vehicle-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
+.custom-vehicle-icon {
+  transition: transform 0.4s linear;
+}
+
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  border-radius: 1.25rem;
+  z-index: 10;
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(149, 125, 173, 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 14px rgba(149, 125, 173, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(149, 125, 173, 0);
+  }
+}
