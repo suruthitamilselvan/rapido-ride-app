@@ -165,9 +165,9 @@ app.use('/api/promos', promoRouter);
 app.use('/api/reviews', reviewRouter);
 app.use('/api/users', userRouter);
 
-const PORT = process.env.PORT || 5000;
+const PORT = Number(process.env.PORT) || 5000;
 
-server.listen(PORT, () => {
-  console.log(`🚀 Rapido Server is running at http://localhost:${PORT}`);
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Rapido Server is running on 0.0.0.0:${PORT}`);
   console.log(`📡 Socket.IO server ready for real-time events`);
 });
