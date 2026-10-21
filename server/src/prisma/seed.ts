@@ -1,16 +1,25 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../prisma';
 
-const prisma = new PrismaClient();
+export async function seedDatabase(force = false) {
+  try {
+    if (!force) {
+      const userCount = await prisma.user.count();
+      if (userCount > 0) {
+        console.log('✓ Database already contains records. Skipping auto-seed.');
+        return;
+      }
+    }
 
-async function main() {
-  console.log('[Seed] Clearing existing demo records...');
-  await prisma.review.deleteMany();
-  await prisma.ride.deleteMany();
-  await prisma.captainProfile.deleteMany();
-  await prisma.user.deleteMany();
-  await prisma.promoCode.deleteMany();
+    if (force) {
+      console.log('[Seed] Clearing existing demo records...');
+      await prisma.review.deleteMany();
+      await prisma.ride.deleteMany();
+      await prisma.captainProfile.deleteMany();
+      await prisma.user.deleteMany();
+      await prisma.promoCode.deleteMany();
+    }
 
-  console.log('[Seed] Creating demo users and captains...');
+    console.log('[Seed] Creating demo users, captains, and promo codes...');
 
   // 1. Rider User
   const rider = await prisma.user.create({
@@ -164,13 +173,16 @@ async function main() {
   });
 
   console.log('[Seed] Database seeded successfully!');
+  } catch (err: any) {
+    console.error('[Seed] Note during database seeding:', err.message);
+  }
 }
 
-main()
-  .catch((e) => {
-    console.error('[Seed] Error seeding database:', e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+// When executed directly via `ts-node src/prisma/seed.ts` or `npm run seed`
+if (require.main === module) {
+  seedDatabase(true)
+    .catch((e) => console.error(e))
+    .finally(async () => {
+      await prisma.$disconnect();
+    });
+}

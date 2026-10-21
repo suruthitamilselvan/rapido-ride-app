@@ -15,6 +15,7 @@ import { paymentRouter } from './routes/payments';
 import { promoRouter } from './routes/promos';
 import { reviewRouter } from './routes/reviews';
 import { userRouter } from './routes/users';
+import { seedDatabase } from './prisma/seed';
 
 const app = express();
 const server = http.createServer(app);
@@ -167,7 +168,8 @@ app.use('/api/users', userRouter);
 
 const PORT = Number(process.env.PORT) || 5000;
 
-server.listen(PORT, '0.0.0.0', () => {
+server.listen(PORT, '0.0.0.0', async () => {
   console.log(`🚀 Rapido Server is running on 0.0.0.0:${PORT}`);
   console.log(`📡 Socket.IO server ready for real-time events`);
+  await seedDatabase(false);
 });
