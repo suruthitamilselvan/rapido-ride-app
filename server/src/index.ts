@@ -16,6 +16,7 @@ import { promoRouter } from './routes/promos';
 import { reviewRouter } from './routes/reviews';
 import { userRouter } from './routes/users';
 import { seedDatabase } from './prisma/seed';
+import { prisma } from './prisma';
 
 const app = express();
 const server = http.createServer(app);
