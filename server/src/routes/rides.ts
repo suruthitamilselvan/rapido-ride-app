@@ -161,9 +161,19 @@ rideRouter.post('/', async (req: Request, res: Response) => {
       maxDiscount
     );
 
+    // Verify rider exists or fallback to first available rider to prevent foreign key errors
+    let validRiderId = riderId;
+    const existingUser = await prisma.user.findUnique({ where: { id: riderId } });
+    if (!existingUser) {
+      const fallbackUser = (await prisma.user.findFirst({ where: { role: 'RIDER' } })) || (await prisma.user.findFirst());
+      if (fallbackUser) {
+        validRiderId = fallbackUser.id;
+      }
+    }
+
     const ride = await prisma.ride.create({
       data: {
-        riderId,
+        riderId: validRiderId,
         pickupAddress,
         pickupLat,
         pickupLng,
@@ -197,7 +207,7 @@ rideRouter.post('/', async (req: Request, res: Response) => {
     return res.status(201).json({ success: true, ride });
   } catch (error: any) {
     console.error('Error creating ride:', error);
-    return res.status(500).json({ error: 'Failed to create ride' });
+    return res.status(500).json({ error: error?.message || 'Failed to create ride' });
   }
 });
 

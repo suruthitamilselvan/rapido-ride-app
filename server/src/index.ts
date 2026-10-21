@@ -32,11 +32,12 @@ app.use(
     origin: (origin, callback) => {
       // allow requests with no origin (like mobile apps, curl, etc.)
       if (!origin) return callback(null, true);
-      return callback(null, true); // Allow any local dev origin
+      return callback(null, true); // Allow any origin for client
     },
     credentials: true,
   })
 );
+app.options('*', cors());
 
 app.use(express.json());
 

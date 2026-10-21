@@ -1,7 +1,14 @@
 import { Ride, VehicleEstimate, User, PromoCode, Review } from '../types';
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || 'https://rapido-backend-v1zf.onrender.com/api';
+const getApiBase = () => {
+  const envUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
+  if (envUrl && (envUrl.startsWith('http://') || envUrl.startsWith('https://'))) {
+    return envUrl.endsWith('/api') ? envUrl : `${envUrl.replace(/\/+$/, '')}/api`;
+  }
+  return 'https://rapido-backend-v1zf.onrender.com/api';
+};
+
+const API_BASE = getApiBase();
 
 export async function fetchFareEstimates(
   pickupLat: number,
@@ -19,8 +26,9 @@ export async function fetchFareEstimates(
   });
 
   const res = await fetch(`${API_BASE}/fares/estimate?${params}`);
-  if (!res.ok) throw new Error('Failed to fetch fare estimates');
-  return res.json();
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'Failed to fetch fare estimates');
+  return data;
 }
 
 export async function createRide(rideData: {
@@ -39,15 +47,15 @@ export async function createRide(rideData: {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(rideData),
   });
-  if (!res.ok) throw new Error('Failed to create ride');
-  const data = await res.json();
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'Failed to create ride');
   return data.ride;
 }
 
 export async function getRide(rideId: string): Promise<Ride> {
   const res = await fetch(`${API_BASE}/rides/${rideId}`);
-  if (!res.ok) throw new Error('Failed to fetch ride');
-  const data = await res.json();
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'Failed to fetch ride');
   return data.ride;
 }
 
@@ -128,8 +136,8 @@ export async function cancelRide(rideId: string, reason?: string): Promise<Ride>
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ reason }),
   });
-  if (!res.ok) throw new Error('Failed to cancel ride');
-  const data = await res.json();
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'Failed to cancel ride');
   return data.ride;
 }
 
@@ -137,16 +145,16 @@ export async function completeRide(rideId: string): Promise<Ride> {
   const res = await fetch(`${API_BASE}/rides/${rideId}/complete`, {
     method: 'POST',
   });
-  if (!res.ok) throw new Error('Failed to complete ride');
-  const data = await res.json();
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'Failed to complete ride');
   return data.ride;
 }
 
 export async function fetchRideHistory(userId: string): Promise<Ride[]> {
   const res = await fetch(`${API_BASE}/rides/history/user/${userId}`);
-  if (!res.ok) throw new Error('Failed to fetch ride history');
-  const data = await res.json();
-  return data.rides;
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'Failed to fetch ride history');
+  return data.rides || [];
 }
 
 export async function toggleCaptainDuty(captainId: string, isOnline: boolean, lat?: number, lng?: number) {
@@ -155,20 +163,21 @@ export async function toggleCaptainDuty(captainId: string, isOnline: boolean, la
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ captainId, isOnline, currentLat: lat, currentLng: lng }),
   });
-  if (!res.ok) throw new Error('Failed to toggle duty');
-  return res.json();
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'Failed to toggle duty');
+  return data;
 }
 
 export async function fetchUsers(): Promise<User[]> {
   const res = await fetch(`${API_BASE}/users`);
-  if (!res.ok) throw new Error('Failed to fetch users');
-  const data = await res.json();
-  return data.users;
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'Failed to fetch users');
+  return data.users || [];
 }
 
 export async function validatePromo(code: string): Promise<PromoCode> {
   const res = await fetch(`${API_BASE}/promos/validate/${code}`);
-  const data = await res.json();
+  const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.error || 'Invalid promo code');
   return data.promo;
 }
@@ -185,8 +194,9 @@ export async function submitReview(reviewData: {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(reviewData),
   });
-  if (!res.ok) throw new Error('Failed to submit review');
-  return res.json();
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'Failed to submit review');
+  return data;
 }
 
 export async function processPayment(paymentData: {
@@ -199,6 +209,7 @@ export async function processPayment(paymentData: {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(paymentData),
   });
-  if (!res.ok) throw new Error('Failed to process payment');
-  return res.json();
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'Failed to process payment');
+  return data;
 }

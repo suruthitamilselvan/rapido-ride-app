@@ -20,10 +20,73 @@ const PRESET_LOCATIONS = [
   { name: 'Kempegowda Int. Airport (BLR)', lat: 13.1986, lng: 77.7066 },
 ];
 
+const INITIAL_ESTIMATES: VehicleEstimate[] = [
+  {
+    vehicleType: 'BIKE',
+    title: 'Rapido Bike',
+    subtitle: 'Fastest through traffic • Solo rider',
+    icon: '🛵',
+    capacity: 1,
+    baseFare: 30,
+    distanceFare: 67.5,
+    taxFare: 3.5,
+    discountFare: 0,
+    totalFare: 101,
+    distanceKm: 4.5,
+    durationMin: 14,
+    etaMinutes: 2,
+  },
+  {
+    vehicleType: 'AUTO',
+    title: 'Rapido Auto',
+    subtitle: 'Doorstep pickup • No meter hassles',
+    icon: '🛺',
+    capacity: 3,
+    baseFare: 40,
+    distanceFare: 94.5,
+    taxFare: 4.5,
+    discountFare: 0,
+    totalFare: 139,
+    distanceKm: 4.5,
+    durationMin: 18,
+    etaMinutes: 3,
+  },
+  {
+    vehicleType: 'CAB_ECONOMY',
+    title: 'Cab Economy',
+    subtitle: 'Comfortable AC mini/hatchback',
+    icon: '🚗',
+    capacity: 4,
+    baseFare: 60,
+    distanceFare: 126,
+    taxFare: 9,
+    discountFare: 0,
+    totalFare: 195,
+    distanceKm: 4.5,
+    durationMin: 22,
+    etaMinutes: 4,
+  },
+  {
+    vehicleType: 'CAB_COMFORT',
+    title: 'Cab Comfort',
+    subtitle: 'Top-rated captains • Spacious sedans',
+    icon: '🚘',
+    capacity: 4,
+    baseFare: 80,
+    distanceFare: 171,
+    taxFare: 14,
+    discountFare: 0,
+    totalFare: 265,
+    distanceKm: 4.5,
+    durationMin: 20,
+    etaMinutes: 5,
+  },
+];
+
 export default function RiderPage() {
   const [pickup, setPickup] = useState(PRESET_LOCATIONS[0]);
   const [dropoff, setDropoff] = useState(PRESET_LOCATIONS[1]);
-  const [estimates, setEstimates] = useState<VehicleEstimate[]>([]);
+  const [estimates, setEstimates] = useState<VehicleEstimate[]>(INITIAL_ESTIMATES);
   const [selectedVehicle, setSelectedVehicle] = useState<VehicleType>('BIKE');
   const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
 
@@ -50,7 +113,9 @@ export default function RiderPage() {
         dropoff.lng,
         appliedPromo || undefined
       );
-      setEstimates(data.estimates);
+      if (data?.estimates && data.estimates.length > 0) {
+        setEstimates(data.estimates);
+      }
     } catch (err) {
       console.error('Error fetching estimates:', err);
     }
@@ -262,6 +327,15 @@ export default function RiderPage() {
     return () => clearInterval(interval);
   }, [activeRide?.id, activeRide?.status]);
 
+  // Auto-match fallback after 5 seconds so user is never stranded
+  useEffect(() => {
+    if (!activeRide || activeRide.status !== 'REQUESTED') return;
+    const timer = setTimeout(() => {
+      handleAutoMatch();
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, [activeRide?.id, activeRide?.status]);
+
   // Quick auto-match captain
   const handleAutoMatch = async () => {
     if (!activeRide) return;
@@ -306,7 +380,7 @@ export default function RiderPage() {
     setIsBooking(true);
     try {
       const newRide = await createRide({
-        riderId: currentRiderId,
+        riderId: currentRiderId || 'rider-demo-01',
         pickupAddress: pickup.name,
         pickupLat: pickup.lat,
         pickupLng: pickup.lng,

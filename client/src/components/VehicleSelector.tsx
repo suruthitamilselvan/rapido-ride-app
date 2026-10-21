@@ -69,56 +69,79 @@ export default function VehicleSelector({
 
       {/* Vehicle Options List */}
       <div className="space-y-2.5">
-        {estimates.map((item) => {
-          const isSelected = selectedType === item.vehicleType;
-          return (
-            <div
-              key={item.vehicleType}
-              onClick={() => onSelect(item.vehicleType)}
-              className={`relative p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between ${
-                isSelected
-                  ? 'border-[#957DAD] bg-[#F1F5D8]/50 shadow-xs'
-                  : 'border-[#EFEFEF] hover:border-[#DCE4B2] hover:bg-[#FDFDFD]'
-              }`}
-            >
-              {/* Vehicle Icon & Details */}
-              <div className="flex items-center space-x-3.5">
-                <div className="text-3xl bg-[#EFEFEF] rounded-2xl p-2 w-12 h-12 flex items-center justify-center border border-[#E0E0E0]">
-                  {item.icon}
-                </div>
-                <div>
-                  <div className="flex items-center space-x-2">
-                    <span className="font-bold text-[#2D283E] text-sm sm:text-base">{item.title}</span>
-                    <span className="text-[11px] font-semibold bg-[#EFEFEF] text-[#6E6680] px-2 py-0.5 rounded-full">
-                      {item.etaMinutes} mins away
-                    </span>
+        {estimates.length === 0 ? (
+          <div className="space-y-2.5 py-1">
+            {[1, 2, 3, 4].map((i) => (
+              <div
+                key={i}
+                className="p-3.5 rounded-2xl border border-[#EFEFEF] bg-[#EFEFEF]/40 animate-pulse flex items-center justify-between"
+              >
+                <div className="flex items-center space-x-3.5">
+                  <div className="w-12 h-12 bg-[#E0E0E0] rounded-2xl" />
+                  <div className="space-y-2">
+                    <div className="h-4 w-28 bg-[#E0E0E0] rounded-md" />
+                    <div className="h-3 w-40 bg-[#E8E8E8] rounded-md" />
                   </div>
-                  <p className="text-xs text-[#6E6680] mt-0.5">{item.subtitle}</p>
-                  {item.vehicleType === 'BIKE' && (
-                    <div className="mt-1 flex items-center space-x-1 text-[11px] text-[#784315] font-medium">
-                      <span>🪖 Helmet provided for passenger</span>
+                </div>
+                <div className="space-y-1.5 text-right">
+                  <div className="h-5 w-14 bg-[#E0E0E0] rounded-md ml-auto" />
+                  <div className="h-3 w-10 bg-[#E8E8E8] rounded-md ml-auto" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          estimates.map((item) => {
+            const isSelected = selectedType === item.vehicleType;
+            return (
+              <div
+                key={item.vehicleType}
+                onClick={() => onSelect(item.vehicleType)}
+                className={`relative p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between ${
+                  isSelected
+                    ? 'border-[#957DAD] bg-[#F1F5D8]/50 shadow-xs'
+                    : 'border-[#EFEFEF] hover:border-[#DCE4B2] hover:bg-[#FDFDFD]'
+                }`}
+              >
+                {/* Vehicle Icon & Details */}
+                <div className="flex items-center space-x-3.5">
+                  <div className="text-3xl bg-[#EFEFEF] rounded-2xl p-2 w-12 h-12 flex items-center justify-center border border-[#E0E0E0]">
+                    {item.icon}
+                  </div>
+                  <div>
+                    <div className="flex items-center space-x-2">
+                      <span className="font-bold text-[#2D283E] text-sm sm:text-base">{item.title}</span>
+                      <span className="text-[11px] font-semibold bg-[#EFEFEF] text-[#6E6680] px-2 py-0.5 rounded-full">
+                        {item.etaMinutes} mins away
+                      </span>
+                    </div>
+                    <p className="text-xs text-[#6E6680] mt-0.5">{item.subtitle}</p>
+                    {item.vehicleType === 'BIKE' && (
+                      <div className="mt-1 flex items-center space-x-1 text-[11px] text-[#784315] font-medium">
+                        <span>🪖 Helmet provided for passenger</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Price & Selection */}
+                <div className="text-right">
+                  <div className="text-lg font-extrabold text-[#2D283E]">
+                    ₹{item.totalFare}
+                  </div>
+                  {item.discountFare > 0 && (
+                    <div className="text-xs text-[#415720] font-semibold line-through">
+                      ₹{item.totalFare + item.discountFare}
                     </div>
                   )}
+                  <span className="text-[11px] text-[#888199] font-medium">
+                    {item.distanceKm} km
+                  </span>
                 </div>
               </div>
-
-              {/* Price & Selection */}
-              <div className="text-right">
-                <div className="text-lg font-extrabold text-[#2D283E]">
-                  ₹{item.totalFare}
-                </div>
-                {item.discountFare > 0 && (
-                  <div className="text-xs text-[#415720] font-semibold line-through">
-                    ₹{item.totalFare + item.discountFare}
-                  </div>
-                )}
-                <span className="text-[11px] text-[#888199] font-medium">
-                  {item.distanceKm} km
-                </span>
-              </div>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
       </div>
 
       {/* Promo Code Section */}
@@ -216,7 +239,7 @@ export default function VehicleSelector({
       {/* Book Ride Button */}
       <button
         onClick={onBook}
-        disabled={isLoading}
+        disabled={isLoading || !selectedEstimate}
         className="w-full bg-[#957DAD] hover:bg-[#856C9E] text-white font-bold text-base py-3.5 px-4 rounded-2xl shadow-xs transition-all transform active:scale-[0.99] flex items-center justify-center space-x-2 disabled:opacity-50"
       >
         {isLoading ? (
@@ -224,8 +247,10 @@ export default function VehicleSelector({
             <span className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
             <span>Finding Nearby Captain...</span>
           </span>
+        ) : selectedEstimate ? (
+          <span>Book {selectedEstimate.title} • ₹{selectedEstimate.totalFare}</span>
         ) : (
-          <span>Book {selectedEstimate?.title || 'Ride'} • ₹{selectedEstimate?.totalFare}</span>
+          <span>Calculating Fastest Route...</span>
         )}
       </button>
     </div>

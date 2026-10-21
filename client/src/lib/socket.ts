@@ -1,7 +1,14 @@
 import { io, Socket } from 'socket.io-client';
 
-const SOCKET_URL =
-  process.env.NEXT_PUBLIC_SOCKET_URL || 'https://rapido-backend-v1zf.onrender.com';
+const getSocketUrl = () => {
+  const envUrl = process.env.NEXT_PUBLIC_SOCKET_URL?.trim();
+  if (envUrl && (envUrl.startsWith('http://') || envUrl.startsWith('https://'))) {
+    return envUrl.replace(/\/+$/, '').replace(/\/api$/, '');
+  }
+  return 'https://rapido-backend-v1zf.onrender.com';
+};
+
+const SOCKET_URL = getSocketUrl();
 
 let socket: Socket | null = null;
 
