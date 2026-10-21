@@ -157,6 +157,29 @@ app.get('/health', (_req, res) => {
   });
 });
 
+// Database debug and health inspection
+app.get('/api/debug-db', async (_req, res) => {
+  try {
+    const userCount = await prisma.user.count();
+    const captainCount = await prisma.captainProfile.count();
+    const promoCount = await prisma.promoCode.count();
+    return res.json({
+      status: 'connected',
+      userCount,
+      captainCount,
+      promoCount,
+      databaseUrlPrefix: (process.env.DATABASE_URL || '').substring(0, 15) + '...',
+    });
+  } catch (err: any) {
+    return res.status(500).json({
+      status: 'error',
+      message: err.message,
+      code: err.code,
+      meta: err.meta,
+    });
+  }
+});
+
 // Mount API routes
 app.use('/api/fares', fareRouter);
 app.use('/api/rides', rideRouter);
