@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import Map from '../components/Map';
 import VehicleSelector from '../components/VehicleSelector';
 import ActiveRideCard from '../components/ActiveRideCard';
 import PaymentModal from '../components/PaymentModal';
 import SOSModal from '../components/SOSModal';
 import { getSocket } from '../lib/socket';
-import { fetchFareEstimates, createRide, getActiveRide, cancelRide, validatePromo, getRide, autoMatchRide } from '../lib/api';
+import { fetchFareEstimates, createRide, getActiveRide, cancelRide, validatePromo, getRide, autoMatchRide, fetchUsers } from '../lib/api';
 import { Ride, VehicleEstimate, VehicleType } from '../types';
 import { MapPin, ArrowRightLeft, ShieldCheck, Sparkles, Navigation } from 'lucide-react';
 
@@ -102,6 +103,8 @@ export default function RiderPage() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showSOSModal, setShowSOSModal] = useState(false);
   const [currentRiderId, setCurrentRiderId] = useState<string>('rider-demo-01');
+  const [currentUserRole, setCurrentUserRole] = useState<'RIDER' | 'CAPTAIN' | 'ADMIN'>('RIDER');
+  const [currentUserName, setCurrentUserName] = useState<string>('Rahul Sharma');
 
   // Load fare estimates
   const loadEstimates = useCallback(async () => {
@@ -127,9 +130,18 @@ export default function RiderPage() {
 
   // Sync active user & check active ride
   useEffect(() => {
-    const syncUser = () => {
+    const syncUser = async () => {
       const storedId = localStorage.getItem('rapido_current_user_id') || 'rider-demo-01';
       setCurrentRiderId(storedId);
+      try {
+        const users = await fetchUsers();
+        const found = users.find((u) => u.id === storedId);
+        if (found) {
+          setCurrentUserRole(found.role);
+          setCurrentUserName(found.name);
+        }
+      } catch (e) {}
+
       getActiveRide(storedId).then((ride) => {
         if (ride) {
           setActiveRide(ride);
@@ -433,6 +445,29 @@ export default function RiderPage() {
           </div>
         </div>
       </div>
+
+      {/* Captain Guidance Banner if logged in as Captain */}
+      {currentUserRole === 'CAPTAIN' && (
+        <div className="bg-[#957DAD]/15 border-2 border-[#957DAD] rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-center space-x-3">
+            <span className="text-3xl">🛺</span>
+            <div>
+              <div className="font-bold text-sm text-[#2D283E]">
+                You are currently logged in as Captain {currentUserName}
+              </div>
+              <p className="text-xs text-[#6E6680] mt-0.5">
+                This screen is the Rider booking view. To view incoming trip requests, driver earnings, and accept rides, open the Captain Dashboard.
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/captain"
+            className="bg-[#957DAD] hover:bg-[#856C9E] text-white font-bold text-xs py-2.5 px-4 rounded-xl shadow-xs transition-colors flex items-center justify-center space-x-1.5 self-start sm:self-auto shrink-0"
+          >
+            <span>Open Captain Dashboard ➔</span>
+          </Link>
+        </div>
+      )}
 
       {/* Main Grid: Interactive Map + Booking / Active Ride Card */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">

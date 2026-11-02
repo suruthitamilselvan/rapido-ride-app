@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Shield, Bike, Car, User, Clock, ChevronDown, Check, RotateCcw } from 'lucide-react';
 import { getSocket } from '../lib/socket';
 import { fetchUsers, resetDemoRides } from '../lib/api';
@@ -10,6 +10,7 @@ import { User as UserType } from '../types';
 
 export default function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [isConnected, setIsConnected] = useState(false);
   const [users, setUsers] = useState<UserType[]>([]);
   const [currentUser, setCurrentUser] = useState<UserType | null>(null);
@@ -48,6 +49,13 @@ export default function Navbar() {
     setDropdownOpen(false);
     // Reload or notify state
     window.dispatchEvent(new Event('rapido_user_changed'));
+
+    // Automatically navigate to the corresponding dashboard!
+    if (user.role === 'CAPTAIN') {
+      router.push('/captain');
+    } else {
+      router.push('/');
+    }
   };
 
   return (

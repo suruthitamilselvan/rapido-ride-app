@@ -128,8 +128,8 @@ export default function ActiveRideCard({
         </div>
       )}
 
-      {/* 4-Digit Ride Start OTP Highlight (Shown before ride starts) */}
-      {ride.status !== 'IN_PROGRESS' && (
+      {/* 4-Digit Ride Start OTP Highlight (Shown ONLY AFTER Captain accepts, before trip starts) */}
+      {(ride.status === 'ACCEPTED' || ride.status === 'ARRIVED_PICKUP') && (
         <div className="bg-[#FFD6A5]/35 rounded-2xl p-4 text-[#2D283E] border border-[#FFD6A5] shadow-xs flex items-center justify-between">
           <div>
             <div className="flex items-center space-x-1.5 text-xs font-bold uppercase tracking-wider text-[#784315]">
@@ -190,22 +190,28 @@ export default function ActiveRideCard({
           <div className="animate-spin w-7 h-7 border-3 border-[#957DAD] border-t-transparent rounded-full mx-auto" />
           <div>
             <p className="text-xs text-[#2D283E] font-bold">
-              Matching nearest Rapido Captain...
+              Searching for Nearby Rapido Captain...
             </p>
             <p className="text-[11px] text-[#6E6680] mt-0.5">
-              Broadcasted to nearby active Captains
+              Broadcasted to nearby active drivers. Waiting for a Captain to accept.
             </p>
           </div>
-          {onAutoMatch && (
-            <div className="pt-1">
+          <div className="pt-1 flex flex-col sm:flex-row gap-2">
+            <a
+              href="/captain"
+              className="flex-1 bg-[#F1F5D8] hover:bg-[#E5ECC0] text-[#415720] border border-[#DCE4B2] font-bold text-xs py-2.5 px-3 rounded-xl shadow-xs transition-all flex items-center justify-center space-x-1"
+            >
+              <span>👉 Open Captain Dashboard to Accept</span>
+            </a>
+            {onAutoMatch && (
               <button
                 onClick={onAutoMatch}
-                className="w-full bg-[#957DAD] hover:bg-[#856C9E] text-white font-bold text-xs py-2.5 px-3 rounded-xl shadow-xs transition-all flex items-center justify-center space-x-1.5"
+                className="bg-[#957DAD] hover:bg-[#856C9E] text-white font-bold text-xs py-2.5 px-3 rounded-xl shadow-xs transition-all flex items-center justify-center space-x-1"
               >
-                <span>⚡ Instant Match Captain (Test Flow)</span>
+                <span>⚡ Instant Match (Test Flow)</span>
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       )}
 
