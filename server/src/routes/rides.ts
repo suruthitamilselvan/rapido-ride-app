@@ -36,22 +36,40 @@ rideRouter.post('/:id/accept', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Ride has already been accepted or finished' });
     }
 
-    // If no captainId specified, find best matching captain from DB
-    if (!captainId) {
-      const matchingCaptain = await prisma.captainProfile.findFirst({
-        where: { vehicleType: ride.vehicleType },
-        include: { user: true },
-      }) || await prisma.captainProfile.findFirst({ include: { user: true } });
+    // Resolve valid captainId (check by captain profile id or user id)
+    let validCaptainId: string | undefined = undefined;
+    if (captainId) {
+      const byProfileId = await prisma.captainProfile.findUnique({ where: { id: captainId } });
+      if (byProfileId) {
+        validCaptainId = byProfileId.id;
+      } else {
+        const byUserId = await prisma.captainProfile.findFirst({ where: { userId: captainId } });
+        if (byUserId) {
+          validCaptainId = byUserId.id;
+        }
+      }
+    }
+
+    if (!validCaptainId) {
+      const matchingCaptain =
+        (await prisma.captainProfile.findFirst({
+          where: { vehicleType: ride.vehicleType },
+          include: { user: true },
+        })) || (await prisma.captainProfile.findFirst({ include: { user: true } }));
 
       if (matchingCaptain) {
-        captainId = matchingCaptain.id;
+        validCaptainId = matchingCaptain.id;
       }
+    }
+
+    if (!validCaptainId) {
+      return res.status(404).json({ error: 'No captains registered in database' });
     }
 
     const updated = await prisma.ride.update({
       where: { id },
       data: {
-        captainId,
+        captainId: validCaptainId,
         status: 'ACCEPTED',
       },
       include: {

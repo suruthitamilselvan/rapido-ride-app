@@ -11,7 +11,7 @@ interface CaptainAlertModalProps {
 }
 
 export default function CaptainAlertModal({ ride, onAccept, onDecline }: CaptainAlertModalProps) {
-  const [secondsLeft, setSecondsLeft] = useState(15);
+  const [secondsLeft, setSecondsLeft] = useState(45);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -94,7 +94,7 @@ export default function CaptainAlertModal({ ride, onAccept, onDecline }: Captain
         <div className="w-full bg-[#EFEFEF] h-2 rounded-full overflow-hidden">
           <div
             className="bg-[#957DAD] h-full transition-all duration-1000 ease-linear rounded-full"
-            style={{ width: `${(secondsLeft / 15) * 100}%` }}
+            style={{ width: `${(secondsLeft / 45) * 100}%` }}
           />
         </div>
 

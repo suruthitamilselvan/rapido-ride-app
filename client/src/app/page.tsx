@@ -327,16 +327,7 @@ export default function RiderPage() {
     return () => clearInterval(interval);
   }, [activeRide?.id, activeRide?.status]);
 
-  // Auto-match fallback after 5 seconds so user is never stranded
-  useEffect(() => {
-    if (!activeRide || activeRide.status !== 'REQUESTED') return;
-    const timer = setTimeout(() => {
-      handleAutoMatch();
-    }, 5000);
-    return () => clearTimeout(timer);
-  }, [activeRide?.id, activeRide?.status]);
-
-  // Quick auto-match captain
+  // Manual auto-match captain (used only when clicking the 'Instant Match Captain' test flow button)
   const handleAutoMatch = async () => {
     if (!activeRide) return;
     try {
